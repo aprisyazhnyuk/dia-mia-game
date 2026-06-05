@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Dia Mia vs The World</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <section id="start-screen" class="screen active">
+      <div class="title-card">
+        <h1>Dia Mia vs The World</h1>
+        <p>
+          Абсурдная мини-RPG о том, как Диа Миа сражается с житейской хренью
+          при помощи милоты, внутреннего стержня и подозрительно сильной фазы Луны.
+        </p>
+        <button id="start-button" class="main-button">Начать</button>
+      </div>
+    </section>
+
+    <section id="story-screen" class="screen">
+      <div class="story-layout">
+        <div class="story-dia-side">
+          <div class="fighter-image-wrapper story-fighter-wrapper">
+            <img id="story-dia-image" class="fighter-image dia-image story-dia-image" src="assets/dia.png" alt="Диа Миа" />
+          </div>
+        </div>
+
+        <div class="dialogue-box">
+          <h2 id="story-title">Глава 1. Болячка</h2>
+          <p id="story-text"></p>
+          <button id="story-next-button" class="main-button">Дальше</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="battle-screen" class="screen">
+        <div id="battle-flash" class="battle-flash"></div>
+
+          <div id="ave-light" class="ave-light">
+            <div class="ave-sparks"></div>
+          </div>
+
+          <div id="skill-effect-layer" class="skill-effect-layer">
+            <div id="speech-bubble" class="speech-bubble"></div>
+            <img id="luna-cat-effect" class="luna-cat-effect" src="assets/effects/luna-cat.png" alt="Луна" />
+          </div>
+
+        <div class="battle-layout">
+        <div class="fighter dia-side">
+          <div class="nameplate">
+            <span>Диа Миа</span>
+            <span id="dia-hp-text">100 / 100</span>
+          </div>
+          <div class="hp-bar">
+            <div id="dia-hp-fill" class="hp-fill"></div>
+          </div>
+          <div class="fighter-image-wrapper">
+            <img id="dia-image" class="fighter-image dia-image" src="assets/dia.png" alt="Диа Миа" />
+            <div id="dia-floating-text" class="floating-text"></div>
+          </div>
+        </div>
+
+        <div class="fighter enemy-side">
+          <div class="nameplate">
+            <span id="enemy-name">Болячка</span>
+            <span id="enemy-hp-text">60 / 60</span>
+          </div>
+          <div class="hp-bar">
+            <div id="enemy-hp-fill" class="hp-fill enemy-hp-fill"></div>
+          </div>
+          <div class="fighter-image-wrapper">
+            <img id="enemy-image" class="fighter-image enemy-image" src="assets/enemies/bolyachka.png" alt="Болячка" />
+            <div id="enemy-floating-text" class="floating-text"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-panel">
+        <div id="battle-log" class="battle-log">
+          Болячка появилась. Она выглядит маленькой, но уверенной в себе.
+        </div>
+
+        <div class="actions-wrapper">
+          <div id="turn-indicator" class="turn-indicator">Ход Ди</div>
+
+          <div id="actions" class="actions">
+            <button class="action-button" data-action="word">Бойкое словцо</button>
+            <button class="action-button" data-action="cute">Критический урон милотой</button>
+            <button class="action-button" data-action="core">Внутренний стержень</button>
+            <button class="action-button" data-action="moon">Фаза Луны</button>
+            <button class="action-button final-action" data-action="ave">Ave Dia Mia</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="victory-screen" class="screen">
+      <div class="title-card">
+        <h1>Победа</h1>
+        <p>
+          Болячка была побеждена чаем, пледом и необъяснимой харизмой Ди.
+        </p>
+        <p>
+          Это была только первая маленькая битва большого дня.
+        </p>
+        <button id="restart-button" class="main-button">Сыграть ещё раз</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
