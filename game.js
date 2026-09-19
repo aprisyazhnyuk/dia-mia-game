@@ -285,10 +285,7 @@ function setChapterBackground() {
   const chapter = getCurrentChapter();
   const gameShell = document.querySelector(".game-shell");
 
-  gameShell.style.backgroundImage = `
-    linear-gradient(135deg, rgba(20, 8, 24, 0.42), rgba(0, 0, 0, 0.68)),
-    url("${chapter.background}")
-  `;
+  gameShell.style.setProperty("--chapter-background", `url("${chapter.background}")`);
 }
 
 function randomInt(min, max) {

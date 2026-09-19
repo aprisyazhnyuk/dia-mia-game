@@ -8,13 +8,15 @@ The game is written in Russian and consists of five battles with lightweight tur
 
 [Play Dia Mia vs The World](https://aprisyazhnyuk.github.io/dia-mia-game/)
 
-No installation or account is required. The game runs entirely in the browser and does not collect or transmit user data.
+No installation or account is required. The game is designed for portrait play in Chrome on Android and does not collect or transmit user data.
+
+After one complete online visit, the game is cached on the device and can be reopened without a network connection. Keep the tab open until the “Игра готова к офлайн-режиму” confirmation appears.
 
 ## How to play
 
 Use the action buttons during battle to attack, recover health, or activate special abilities. Progress through all five chapters and defeat the final boss.
 
-The game supports mouse, keyboard, and touch interaction through standard browser controls.
+The interface is touch-first. If the phone is held horizontally, the game asks the player to return to portrait orientation.
 
 ## Technology
 
@@ -32,13 +34,14 @@ It has no backend, external API, analytics, cookies, or third-party JavaScript d
 - `index.html` — page structure and game screens
 - `game.js` — game state, chapters, combat and interactions
 - `style.css` — layout, presentation and animations
+- `manifest.webmanifest`, `pwa.js` and `service-worker.js` — Android browser metadata and offline support
 - `assets/` — character art, enemies, backgrounds and effects
 
 ## Content notice
 
 The game contains Russian profanity and humorous references to illness, anxiety, work stress and PMS.
 
-It also uses screen flashes, movement and animated effects. A reduced-motion mode is planned.
+It also uses screen flashes, movement and animated effects. The interface honors the device’s reduced-motion preference.
 
 ## Licensing
 
