@@ -1,0 +1,20 @@
+{
+  "name": "Dia Mia vs The World",
+  "short_name": "Dia Mia",
+  "description": "Абсурдная мини-RPG о Диа Миа и её большом дне.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#120b18",
+  "theme_color": "#1b1020",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
