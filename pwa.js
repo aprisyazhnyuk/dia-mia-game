@@ -19,7 +19,16 @@ window.addEventListener("online", () => {
   showOfflineToast("Снова онлайн");
 });
 
-if ("serviceWorker" in navigator) {
+const localDevelopmentHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+const isLocalDevelopment = localDevelopmentHosts.has(window.location.hostname);
+
+if ("serviceWorker" in navigator && isLocalDevelopment) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
+  });
+}
+
+if ("serviceWorker" in navigator && !isLocalDevelopment) {
   window.addEventListener("load", async () => {
     try {
       await navigator.serviceWorker.register("./service-worker.js");

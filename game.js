@@ -293,9 +293,7 @@ function cancelTypedText(element) {
     return;
   }
 
-  window.clearTimeout(state.timer);
-  typingStates.delete(element);
-  element.classList.remove("is-typing");
+  state.cancel();
 }
 
 function typeText(element, text, options = {}) {
@@ -309,21 +307,41 @@ function typeText(element, text, options = {}) {
   element.setAttribute("aria-label", text);
   element.classList.add("is-typing");
 
+  let resolveCompletion;
+  const completion = new Promise((resolve) => {
+    resolveCompletion = resolve;
+  });
+
   const state = {
     timer: null,
     index: 0,
     finished: false,
-    finish() {
+    settle(showFullText, runOnComplete) {
       if (state.finished) {
         return;
       }
 
       state.finished = true;
       window.clearTimeout(state.timer);
-      element.textContent = text;
+
+      if (showFullText) {
+        element.textContent = text;
+      }
+
       element.classList.remove("is-typing");
       typingStates.delete(element);
-      onComplete();
+
+      if (runOnComplete) {
+        onComplete();
+      }
+
+      resolveCompletion();
+    },
+    finish() {
+      state.settle(true, true);
+    },
+    cancel() {
+      state.settle(false, false);
     },
   };
 
@@ -331,7 +349,7 @@ function typeText(element, text, options = {}) {
 
   if (reducedMotionQuery.matches || characters.length === 0) {
     state.finish();
-    return;
+    return completion;
   }
 
   function typeNextCharacter() {
@@ -355,6 +373,7 @@ function typeText(element, text, options = {}) {
   }
 
   typeNextCharacter();
+  return completion;
 }
 
 function completeTypedText(element) {
@@ -374,6 +393,12 @@ function setStoryAdvanceLabel(label) {
   if (!typingStates.has(storyText)) {
     storyNextButton.textContent = storyAdvanceLabel;
   }
+}
+
+function wait(duration) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
 }
 
 function typeStoryText(text) {
@@ -420,8 +445,11 @@ function updateHpUi() {
   enemyHpFill.style.width = `${enemyHpPercent}%`;
 }
 
-function setBattleLog(text) {
-  battleLog.textContent = text;
+async function setBattleLog(text, options = {}) {
+  const hold = options.hold ?? 700;
+
+  await typeText(battleLog, text, { speed: 20 });
+  await wait(hold);
 }
 
 function animateHit(element) {
@@ -467,15 +495,21 @@ function damageEnemy(amount) {
   showFloatingText(enemyFloatingText, `-${amount}`, "damage-text");
 }
 
-function showSpeechBubble() {
+async function showSpeechBubble() {
   const phrase = diaBattlePhrases[randomInt(0, diaBattlePhrases.length - 1)];
 
-  speechBubble.classList.remove("show");
+  speechBubble.classList.remove("show", "leaving");
 
   void speechBubble.offsetWidth;
 
-  speechBubble.textContent = phrase;
   speechBubble.classList.add("show");
+
+  await typeText(speechBubble, phrase, { speed: 26 });
+  await wait(1400);
+
+  speechBubble.classList.add("leaving");
+  await wait(260);
+  speechBubble.classList.remove("show", "leaving");
 }
 
 function showLunaCat() {
@@ -587,7 +621,7 @@ function continueStory() {
   typeStoryText(chapter.intro[currentStoryIndex]);
 }
 
-function startBattle() {
+async function startBattle() {
   const chapter = getCurrentChapter();
 
   enemyName.textContent = enemy.name;
@@ -597,14 +631,22 @@ function startBattle() {
 
   updateHpUi();
   updateFinalAbilityVisibility();
-  setActionsEnabled(true);
-
-  setBattleLog(`${enemy.name} появляется. Кажется, у неё есть претензии к текущему дню.`);
-
+  inputLocked = true;
+  setActionsEnabled(false);
+  turnIndicator.textContent = "Бой начинается";
+  turnIndicator.classList.remove("enemy-turn");
   showScreen("battle");
+
+  await setBattleLog(
+    `${enemy.name} появляется. Кажется, у неё есть претензии к текущему дню.`,
+    { hold: 500 }
+  );
+
+  inputLocked = false;
+  setActionsEnabled(true);
 }
 
-function playerAction(actionType) {
+async function playerAction(actionType) {
   if (inputLocked) {
     return;
   }
@@ -613,11 +655,12 @@ function playerAction(actionType) {
   setActionsEnabled(false);
 
   let resultText = "";
+  let supportingEffect = Promise.resolve();
 
   if (actionType === "word") {
     const damage = randomInt(14, 20);
 
-    showSpeechBubble();
+    supportingEffect = showSpeechBubble();
     damageEnemy(damage);
 
     resultText = `Ди использует «Бойкое словцо». ${enemy.name} получает ${damage} урона.`;
@@ -698,44 +741,44 @@ function playerAction(actionType) {
   }
 
   updateHpUi();
-  setBattleLog(resultText);
+  await Promise.all([
+    setBattleLog(resultText, { hold: 800 }),
+    supportingEffect,
+  ]);
 
   if (enemy.hp <= 0) {
     const isFinalChapter = getCurrentChapter().id === "final";
 
     if (isFinalChapter && actionType !== "ave") {
-      enterFinalFinisherMode();
+      await enterFinalFinisherMode();
       return;
     }
 
     if (isFinalChapter && actionType === "ave") {
-      setBattleLog(
+      playEnemyDefeatAnimation();
+      await setBattleLog(
         "Большая Жизненная Хрень пошатнулась, попыталась сохранить достоинство и драматично упала за пределы экрана."
       );
 
-      setTimeout(() => {
-        playEnemyDefeatAnimation();
-      }, 900);
-
-      setTimeout(startVictoryStory, 2600);
+      startVictoryStory();
       return;
     }
 
     playEnemyDefeatAnimation();
-    setBattleLog(`${enemy.name} пошатнулась и с позором падает за пределы экрана.`);
+    await setBattleLog(
+      `${enemy.name} пошатнулась и с позором падает за пределы экрана.`,
+      { hold: 900 }
+    );
 
-    setTimeout(startVictoryStory, 1300);
+    startVictoryStory();
     return;
   }
 
-  setTimeout(() => {
-    setBattleLog(`${enemy.name} готовит ответный ход...`);
-  }, 700);
-
-  setTimeout(enemyTurn, 1300);
+  await setBattleLog(`${enemy.name} готовит ответный ход...`, { hold: 350 });
+  await enemyTurn();
 }
 
-function enemyTurn() {
+async function enemyTurn() {
   const chapter = getCurrentChapter();
   const attack = chapter.enemy.attacks[randomInt(0, chapter.enemy.attacks.length - 1)];
 
@@ -749,28 +792,28 @@ function enemyTurn() {
   damagePlayer(damage);
   updateHpUi();
 
-  setBattleLog(`${attack.text} Ди получает ${damage} урона.`);
+  await setBattleLog(
+    `${attack.text} Ди получает ${damage} урона.`,
+    { hold: 850 }
+  );
 
   if (player.hp <= 0) {
-    setTimeout(() => {
-      player.hp = 35;
-      updateHpUi();
+    player.hp = 35;
+    updateHpUi();
 
-      setBattleLog(
-        "Ди драматично легла на диван. Через 7 секунд внутренний стержень восстановился. Бой продолжается."
-      );
+    await setBattleLog(
+      "Ди драматично легла на диван. Через 7 секунд внутренний стержень восстановился. Бой продолжается.",
+      { hold: 900 }
+    );
 
-      inputLocked = false;
-      setActionsEnabled(true);
-    }, 1300);
+    inputLocked = false;
+    setActionsEnabled(true);
 
     return;
   }
 
-  setTimeout(() => {
-    inputLocked = false;
-    setActionsEnabled(true);
-  }, 800);
+  inputLocked = false;
+  setActionsEnabled(true);
 }
 
 function startVictoryStory() {
@@ -794,16 +837,17 @@ function startVictoryStory() {
   typeStoryText(chapter.victory[currentVictoryIndex]);
 }
 
-function enterFinalFinisherMode() {
+async function enterFinalFinisherMode() {
+  await setBattleLog(
+    "Большая Жизненная Хрень потеряла все HP, но всё ещё драматично держится за экран. Остался только один правильный ответ.",
+    { hold: 600 }
+  );
+
   finalFinisherReady = true;
   inputLocked = false;
 
   updateFinalAbilityVisibility();
   setActionsEnabled(true);
-
-  setBattleLog(
-    "Большая Жизненная Хрень потеряла все HP, но всё ещё драматично держится за экран. Остался только один правильный ответ."
-  );
 }
 
 function continueVictoryStory() {
@@ -854,6 +898,7 @@ function updateFinalAbilityVisibility() {
 startButton.addEventListener("click", startGame);
 storyNextButton.addEventListener("click", continueStory);
 restartButton.addEventListener("click", startGame);
+battleLog.addEventListener("click", () => completeTypedText(battleLog));
 
 actionButtons.forEach((button) => {
   button.addEventListener("click", () => {

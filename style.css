@@ -535,7 +535,11 @@ body {
 }
 
 .speech-bubble.show {
-  animation: speechBubblePop 1.15s ease forwards;
+  animation: speechBubbleEnter 0.28s ease forwards;
+}
+
+.speech-bubble.show.leaving {
+  animation: speechBubbleLeave 0.25s ease forwards;
 }
 
 .luna-cat-effect {
@@ -1039,7 +1043,9 @@ button {
   line-height: 1.35;
 }
 
-#story-text.is-typing::after {
+#story-text.is-typing::after,
+.battle-log.is-typing::after,
+.speech-bubble.is-typing::after {
   display: inline-block;
   width: 0.52em;
   height: 1em;
@@ -1049,6 +1055,30 @@ button {
   content: "";
   vertical-align: -0.12em;
   animation: typingCursor 0.7s steps(1, end) infinite;
+}
+
+@keyframes speechBubbleEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.72) rotate(-2deg) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-1deg) translateY(0);
+  }
+}
+
+@keyframes speechBubbleLeave {
+  from {
+    opacity: 1;
+    transform: scale(1) rotate(-1deg) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.94) rotate(-2deg) translateY(-12px);
+  }
 }
 
 @keyframes typingCursor {
@@ -1172,6 +1202,9 @@ button {
   padding: 9px 11px;
   font-size: clamp(13px, 3.5vw, 16px);
   line-height: 1.28;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .actions-wrapper {
