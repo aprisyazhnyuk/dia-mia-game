@@ -37,6 +37,10 @@ const restartButton = document.getElementById("restart-button");
 
 const victoryScreen = document.getElementById("victory-screen");
 
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const typingStates = new Map();
+const TYPEWRITER_SPEED = 28;
+
 const chapters = [
   {
     id: "bolyachka",
@@ -268,6 +272,119 @@ let inputLocked = false;
 let isVictorySequence = false;
 let finalFinisherReady = false;
 let finalFinisherUsed = false;
+let storyAdvanceLabel = "Дальше";
+
+function getTypingDelay(character, speed) {
+  if (".!?…".includes(character)) {
+    return speed * 7;
+  }
+
+  if (",:;—".includes(character)) {
+    return speed * 3;
+  }
+
+  return speed;
+}
+
+function cancelTypedText(element) {
+  const state = typingStates.get(element);
+
+  if (!state) {
+    return;
+  }
+
+  window.clearTimeout(state.timer);
+  typingStates.delete(element);
+  element.classList.remove("is-typing");
+}
+
+function typeText(element, text, options = {}) {
+  const speed = options.speed ?? TYPEWRITER_SPEED;
+  const onComplete = options.onComplete ?? (() => {});
+  const characters = Array.from(text);
+
+  cancelTypedText(element);
+
+  element.textContent = "";
+  element.setAttribute("aria-label", text);
+  element.classList.add("is-typing");
+
+  const state = {
+    timer: null,
+    index: 0,
+    finished: false,
+    finish() {
+      if (state.finished) {
+        return;
+      }
+
+      state.finished = true;
+      window.clearTimeout(state.timer);
+      element.textContent = text;
+      element.classList.remove("is-typing");
+      typingStates.delete(element);
+      onComplete();
+    },
+  };
+
+  typingStates.set(element, state);
+
+  if (reducedMotionQuery.matches || characters.length === 0) {
+    state.finish();
+    return;
+  }
+
+  function typeNextCharacter() {
+    if (state.finished) {
+      return;
+    }
+
+    const character = characters[state.index];
+    element.textContent += character;
+    state.index += 1;
+
+    if (state.index >= characters.length) {
+      state.finish();
+      return;
+    }
+
+    state.timer = window.setTimeout(
+      typeNextCharacter,
+      getTypingDelay(character, speed)
+    );
+  }
+
+  typeNextCharacter();
+}
+
+function completeTypedText(element) {
+  const state = typingStates.get(element);
+
+  if (!state) {
+    return false;
+  }
+
+  state.finish();
+  return true;
+}
+
+function setStoryAdvanceLabel(label) {
+  storyAdvanceLabel = label;
+
+  if (!typingStates.has(storyText)) {
+    storyNextButton.textContent = storyAdvanceLabel;
+  }
+}
+
+function typeStoryText(text) {
+  storyNextButton.textContent = "Показать всё";
+
+  typeText(storyText, text, {
+    onComplete: () => {
+      storyNextButton.textContent = storyAdvanceLabel;
+    },
+  });
+}
 
 function getCurrentChapter() {
   return chapters[currentChapterIndex];
@@ -442,14 +559,18 @@ function startChapter() {
   };
 
   storyTitle.textContent = chapter.title;
-  storyText.textContent = chapter.intro[currentStoryIndex];
-  storyNextButton.textContent = "Дальше";
+  setStoryAdvanceLabel("Дальше");
 
   showScreen("story");
+  typeStoryText(chapter.intro[currentStoryIndex]);
 }
 
 function continueStory() {
   const chapter = getCurrentChapter();
+
+  if (completeTypedText(storyText)) {
+    return;
+  }
 
   if (isVictorySequence) {
     continueVictoryStory();
@@ -463,7 +584,7 @@ function continueStory() {
     return;
   }
 
-  storyText.textContent = chapter.intro[currentStoryIndex];
+  typeStoryText(chapter.intro[currentStoryIndex]);
 }
 
 function startBattle() {
@@ -659,18 +780,18 @@ function startVictoryStory() {
   currentVictoryIndex = 0;
 
   storyTitle.textContent = "Победа";
-  storyText.textContent = chapter.victory[currentVictoryIndex];
 
   if (currentChapterIndex === chapters.length - 1) {
-    storyNextButton.textContent = "Финал";
+    setStoryAdvanceLabel("Финал");
   } else {
-    storyNextButton.textContent = "Дальше";
+    setStoryAdvanceLabel("Дальше");
   }
 
   inputLocked = false;
   setActionsEnabled(true);
 
   showScreen("story");
+  typeStoryText(chapter.victory[currentVictoryIndex]);
 }
 
 function enterFinalFinisherMode() {
@@ -691,7 +812,7 @@ function continueVictoryStory() {
   currentVictoryIndex += 1;
 
   if (currentVictoryIndex < chapter.victory.length) {
-    storyText.textContent = chapter.victory[currentVictoryIndex];
+    typeStoryText(chapter.victory[currentVictoryIndex]);
     return;
   }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "dia-mia-v2";
+const CACHE_NAME = "dia-mia-v3";
 
 const APP_FILES = [
   "./",
