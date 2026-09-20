@@ -825,6 +825,117 @@ button {
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.4));
 }
 
+#start-screen {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 154, 213, 0.14), transparent 38%),
+    #120b18;
+}
+
+.start-card {
+  position: relative;
+  justify-content: flex-start;
+  gap: 0;
+  overflow: hidden;
+  padding: clamp(16px, 4.5vw, 24px);
+}
+
+.start-card::before,
+.start-card::after {
+  position: absolute;
+  z-index: 0;
+  border: 1px solid rgba(255, 209, 235, 0.18);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.start-card::before {
+  top: 25%;
+  left: 50%;
+  width: min(88vw, 360px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+}
+
+.start-card::after {
+  top: 25%;
+  left: 50%;
+  width: min(64vw, 270px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+}
+
+.start-kicker,
+.start-title,
+.start-stage,
+.start-intro,
+.start-card .main-button {
+  position: relative;
+  z-index: 1;
+}
+
+.start-card .start-kicker {
+  width: auto;
+  margin: 0 0 8px;
+  color: #ffb7df;
+  font-size: clamp(11px, 3.2vw, 14px);
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.start-card .start-title {
+  max-width: none;
+  font-size: clamp(45px, 13vw, 62px);
+  line-height: 0.84;
+}
+
+.start-title span {
+  display: block;
+}
+
+.start-title .start-title-versus {
+  margin-top: 8px;
+  color: #ffb7df;
+  font-size: 0.55em;
+  letter-spacing: 0.03em;
+  text-shadow: 2px 2px 0 #5d2857;
+}
+
+.start-stage {
+  display: grid;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  place-items: end center;
+  margin-top: 4px;
+}
+
+.start-stage .start-hero {
+  width: min(76vw, 320px);
+  height: 100%;
+  max-height: 38dvh;
+  margin: 0;
+  object-position: center bottom;
+}
+
+.start-card .start-intro {
+  width: min(100%, 34ch);
+  margin: 8px 0 0;
+  color: #ecd4e3;
+  font-size: clamp(13px, 3.7vw, 16px);
+  line-height: 1.35;
+}
+
+.start-card .main-button {
+  width: 100%;
+  flex: 0 0 auto;
+  margin-top: 14px;
+  padding-block: 14px;
+  font-size: 19px;
+}
+
 .main-button,
 .action-button {
   min-height: 48px;
@@ -1165,6 +1276,23 @@ button {
 
   .start-hero {
     max-height: 31dvh;
+  }
+
+  .start-card .start-title {
+    font-size: clamp(40px, 11.5vw, 52px);
+  }
+
+  .start-stage .start-hero {
+    max-height: 29dvh;
+  }
+
+  .start-card .start-intro {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .start-card .main-button {
+    margin-top: 10px;
   }
 
   .title-card p {
